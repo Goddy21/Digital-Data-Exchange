@@ -139,6 +139,19 @@ def create_ddex_xml(row):
     ET.ElementTree(root).write(xml_filename, encoding='utf-8', xml_declaration=True)
     return xml_filename
 
+
+def ensure_ftp_directory(ftp, directory):
+    """Ensure the directory exists on the FTP server, create if missing."""
+    try:
+        ftp.cwd(directory)
+    except Exception:
+        try:
+            ftp.mkd(directory)
+            ftp.cwd(directory)
+        except Exception as e:
+            print(f"❌ Failed to create FTP directory {directory}: {e}")
+
+
 def upload_to_ftp(file_path, upc_code):
     """Upload a file to the FTP server, ensuring it goes into the correct batch and UPC folder."""
     try:
@@ -146,25 +159,22 @@ def upload_to_ftp(file_path, upc_code):
             ftp.login(FTP_USERNAME, FTP_PASSWORD)
             batch_dir = f"/BATCH_{BATCH_NUMBER}"
             upc_dir = f"{batch_dir}/{upc_code}"
-            
-            if batch_dir not in ftp.nlst():
-                ftp.mkd(batch_dir)
-            ftp.cwd(batch_dir)
-            
-            if upc_code not in ftp.nlst():
-                ftp.mkd(upc_code)
-            ftp.cwd(upc_dir)
-            
+
+            ensure_ftp_directory(ftp, batch_dir)
+            ensure_ftp_directory(ftp, upc_dir)
+
             filename = os.path.basename(file_path)
             if filename in ftp.nlst():
                 print(f"🔄 Skipping duplicate: {file_path}")
                 return
-            
+
             with open(file_path, 'rb') as file:
                 ftp.storbinary(f"STOR {filename}", file)
             print(f"✅ Uploaded: {file_path}")
     except Exception as e:
         print(f"❌ FTP upload failed for {file_path}: {e}")
+
+
 
 def process_and_upload():
     df = read_excel(EXCEL_FILE)
@@ -208,3 +218,4 @@ if __name__ == '__main__':
     print("🚀 Starting process...")
     process_and_upload()
     print("✅ All done!")
+
