@@ -9,14 +9,19 @@ import xml.etree.ElementTree as ET
 from mutagen.mp3 import MP3
 from PIL import Image
 from lxml import etree
+from dotenv import load_dotenv
+load_dotenv()
 
 
 
-# Configuration
-FTP_SERVER = 'ddex-upload.boomplaymusic.com'
-FTP_USERNAME = 'mkononi'
-FTP_PASSWORD = 'xIp6jRnQwtNMr6R3'
-LOCAL_DIR = r'C:\Goddie\THE SURVIVORS GOSPEL CHOIR'
+# Configuration'
+FTP_SERVER = os.getenv('FTP_SERVER')
+FTP_USERNAME = os.getenv('FTP_USERNAME')
+FTP_PASSWORD = os.getenv('FTP_PASSWORD')
+LOCAL_DIR = os.getenv('LOCAL_DIR')
+SCHEMA_FILE = os.getenv('SCHEMA_FILE')
+
+
 EXCEL_FILE = os.path.join(LOCAL_DIR, 'choir.xlsx')
 BATCH_NUMBER = time.strftime('%Y%m%d')
 BATCH_FOLDER = os.path.join(LOCAL_DIR, f"BATCH_{BATCH_NUMBER}")
